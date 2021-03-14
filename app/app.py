@@ -1,6 +1,7 @@
 from app.application.foo import FooApplication
 from app.application.setup import SetupApplication
 from app.repository import SQLiteClient
+from app.router import QueryRouter, SetupRouter
 
 
 class App:
@@ -10,10 +11,12 @@ class App:
         self.db = db
 
         # setup
-        self.setup_app = SetupApplication(db)
+        setup_app = SetupApplication(db)
+        self.setup_router = SetupRouter(setup_app)
 
-        # foo
-        self.foo_app = FooApplication(db)
+        # query
+        foo_app = FooApplication(db)
+        self.query_router = QueryRouter(foo_app)
 
     def migration(self):
         with open(self._MIGRATION_FILE, 'r') as f:
@@ -22,12 +25,7 @@ class App:
         self.db.commit
 
     def setup(self, value: str):
-        pass
+        self.setup_router.execute(value)
 
     def query(self, value: str):
-        query = value.split()
-        query_type = query[0]
-        if query_type == "foo":
-            pass
-        else:
-            raise Exception(f"{query_type} is not implemented yet")
+        self.query_router.execute(value)

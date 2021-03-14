@@ -7,5 +7,5 @@ class SetupApplication:
     def __init__(self, db: SQLiteClient):
         self.db = db
 
-    def execute(self, value: str):
+    def execute(self, request: Request) -> Response:
         pass
