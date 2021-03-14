@@ -1,19 +1,33 @@
-from datetime import datetime
-
-from app.repository import RepositoryAbs
+from app.application.foo import FooApplication
+from app.application.setup import SetupApplication
+from app.repository import SQLiteClient
 
 
 class App:
+    _MIGRATION_FILE = "app/migration.sql"
 
-    def __init__(self, db: RepositoryAbs) -> None:
+    def __init__(self, db: SQLiteClient) -> None:
         self.db = db
+
+        # setup
+        self.setup_app = SetupApplication(db)
+
+        # foo
+        self.foo_app = FooApplication(db)
+
+    def migration(self):
+        with open(self._MIGRATION_FILE, 'r') as f:
+            query = f.read()
+        self.db.executescript(query)
+        self.db.commit
 
     def setup(self, value: str):
         pass
 
-    def execute_query(self, time: datetime, query: str, *args):
-        self.db.set_time(time)
-        if query == "query type":
+    def query(self, value: str):
+        query = value.split()
+        query_type = query[0]
+        if query_type == "foo":
             pass
         else:
-            raise Exception(f"Must not reached: {query}")
+            raise Exception(f"{query_type} is not implemented yet")

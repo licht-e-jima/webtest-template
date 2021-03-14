@@ -1,29 +1,12 @@
-from datetime import datetime
-from typing import List
+import sys
+from uuid import uuid4
 
 from app.app import App
-from app.repository.memory import MemoryRepository
-
-
-class Query:
-    time: datetime
-    query_type: str
-    arguments: List[str]
-
-    def __init__(self, query_str: str):
-        """
-        2020-03-04 10:30 query_type arguments
-        """
-        time_str = query_str[:16]
-        self.time = datetime.strptime(time_str, "%Y-%m-%d %H:%M")
-
-        query_detail = query_str[17:].split()
-        self.query_type = query_detail[0]
-        self.arguments = query_detail[1:]
+from app.repository import SQLiteClient
 
 
 def setup() -> App:
-    repo = MemoryRepository()
+    repo = SQLiteClient(f"app_{uuid4()}.db")
     return App(repo)
 
 def main(lines):
@@ -33,13 +16,15 @@ def main(lines):
         app.setup(l)
 
     for l in lines[m+1:]:
-        query = Query(l)
-        app.execute_query(query.time, query.query_type, *query.arguments)
+        app.query(l)
 
 if __name__ == '__main__':
-    lines = [
-        "1",
-        "setup1",
-        "2021-03-12 00:00 query_type argument1 argument2",
-    ]
-    main(lines)
+    lines = []
+    for l in sys.stdin:
+        lines.append(l.rstrip('\r\n'))
+
+    try:
+        main(lines)
+    except:
+        import traceback
+        traceback.print_exc()
